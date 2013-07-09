@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!-- Field type definitions for Solr-based parser -->
+<schema name="solrparser" version="1.5">
+
+  <types>
+    <fieldType name="string" class="solr.StrField" sortMissingLast="true" omitNorms="true" omitTermFreqAndPositions="true" />
+    
+    <fieldType name="text_de" class="solr.TextField" positionIncrementGap="100" omitNorms="true">
+      <analyzer> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ICUFoldingFilterFactory"/>
+        <!-- We'd like to use the dictionary approach to breaking up compound words, but
+             this generates multiple terms at the same position, which our phrase generation
+             code currently can't handle. E.g. xxxyyy => xxxyyy, xxx, yyy as three terms with
+             the first two at the same position, and the third one (I assume) slightly after,
+             but within 100 so as to be less than positionIncrementGap.
+             <filter class="solr.DictionaryCompoundWordTokenFilterFactory" dictionary="common-nouns_de.txt" minWordSize="5" minSubwordSize="4" maxSubwordSize="15" onlyLongestMatch="true"/>
+          -->
+        <!-- We'd do normalization, except that we're also doing stemming so skip for now
+             <filter class="solr.GermanNormalizationFilterFactory"/>
+         -->
+        <filter class="solr.GermanLightStemFilterFactory"/>
+      </analyzer>
+    </fieldType>
+
+    <!-- A text field with defaults appropriate for English:
+         tokenizes with StandardTokenizer, down cases, protects words from protwords.txt, and
+         finally applies Porter's stemming. -->
+    <fieldType name="text_en" class="solr.TextField" positionIncrementGap="100" omitNorms="true">
+      <analyzer>
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ICUFoldingFilterFactory"/>
+	    <filter class="solr.EnglishPossessiveFilterFactory"/>
+        <filter class="solr.KeywordMarkerFilterFactory" protected="protwords_en.txt"/>
+        <filter class="solr.PorterStemFilterFactory"/>
+      </analyzer>
+    </fieldType>
+
+    <fieldType name="text_es" class="solr.TextField" positionIncrementGap="100" omitNorms="true">
+      <analyzer> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ICUFoldingFilterFactory"/>
+        <filter class="solr.SpanishLightStemFilterFactory"/>
+      </analyzer>
+    </fieldType>
+
+    <fieldType name="text_fr" class="solr.TextField" positionIncrementGap="100" omitNorms="true">
+      <analyzer> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ElisionFilterFactory" ignoreCase="true" articles="contractions_fr.txt"/>
+        <filter class="solr.ICUFoldingFilterFactory"/>
+        <filter class="solr.FrenchLightStemFilterFactory"/>
+      </analyzer>
+    </fieldType>
+
+    <fieldType name="text_it" class="solr.TextField" positionIncrementGap="100" omitNorms="true">
+      <analyzer> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ElisionFilterFactory" ignoreCase="true" articles="contractions_it.txt"/>
+        <filter class="solr.ICUFoldingFilterFactory"/>
+        <filter class="solr.ItalianLightStemFilterFactory"/>
+      </analyzer>
+    </fieldType>
+
+    <fieldType name="text_ja" class="solr.TextField" positionIncrementGap="100" omitNorms="true">
+      <analyzer>
+        <tokenizer class="solr.JapaneseTokenizerFactory" mode="search"/>
+        <filter class="solr.JapaneseBaseFormFilterFactory"/>
+
+        <!-- Using ICUFoldingFilter remaps some Han characters,
+             which we don't want
+        <filter class="solr.ICUFoldingFilterFactory"/>
+        -->
+        
+        <filter class="solr.CJKWidthFilterFactory"/>
+        <filter class="solr.JapaneseKatakanaStemFilterFactory" minimumLength="4"/>
+        <filter class="solr.LowerCaseFilterFactory"/>
+      </analyzer>
+    </fieldType>
+
+    <fieldType name="text_nl" class="solr.TextField" positionIncrementGap="100">
+      <analyzer> 
+        <tokenizer class="solr.StandardTokenizerFactory" />
+        <filter class="solr.ICUFoldingFilterFactory" />
+        <filter class="solr.SnowballPorterFilterFactory" language="Dutch" />
+      </analyzer>
+    </fieldType>
+
+    <fieldType name="text_pt" class="solr.TextField" positionIncrementGap="100" omitNorms="true">
+      <analyzer> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ICUFoldingFilterFactory"/>
+        <filter class="solr.PortugueseLightStemFilterFactory"/>
+      </analyzer>
+    </fieldType>
+
+    <fieldType name="text_ru" class="solr.TextField" positionIncrementGap="100">
+      <analyzer> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ICUFoldingFilterFactory"/>
+        <filter class="solr.RussianLightStemFilterFactory"/>
+      </analyzer>
+    </fieldType>
+
+    <fieldType name="text_sv" class="solr.TextField" positionIncrementGap="100" omitNorms="true">
+      <analyzer> 
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ICUFoldingFilterFactory"/>
+        <filter class="solr.SwedishLightStemFilterFactory"/>
+      </analyzer>
+    </fieldType>
+
+    <fieldType name="text_zh-cn" class="solr.TextField" positionIncrementGap="100" omitNorms="true">
+      <analyzer>
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        
+        <!-- Using ICUFoldingFilter remaps some Han characters,
+             which we don't want
+        <filter class="solr.ICUFoldingFilterFactory"/>
+        -->
+        
+        <filter class="solr.CJKWidthFilterFactory"/>
+        <filter class="solr.LowerCaseFilterFactory"/>
+        <filter class="solr.CJKBigramFilterFactory"/>
+      </analyzer>
+    </fieldType>
+
+ </types>
+
+<!-- Unused fields, so Solr doesn't complain -->
+ <fields>
+   <field name="key" type="string" />
+ </fields>
+
+  <uniqueKey>key</uniqueKey>
+
+</schema>

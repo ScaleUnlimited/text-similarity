@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<config>
+    
+    <requestHandler name="/update" class="solr.UpdateRequestHandler">
+    </requestHandler>
+
+    <luceneMatchVersion>LUCENE_42</luceneMatchVersion>
+
+    <directoryFactory name="DirectoryFactory"
+                    class="${solr.directoryFactory:solr.NRTCachingDirectoryFactory}"/> 
+
+    <updateHandler class="solr.DirectUpdateHandler2">
+    </updateHandler>
+
+    <query>
+        <maxBooleanClauses>1024</maxBooleanClauses>
+        <useColdSearcher>false</useColdSearcher>
+        <maxWarmingSearchers>1</maxWarmingSearchers>
+    </query>
+    
+    <requestDispatcher handleSelect="false" >
+        <httpCaching never304="true" />
+    </requestDispatcher>
+
+    <requestHandler name="/select" class="solr.SearchHandler">
+    </requestHandler>
+
+    <queryResponseWriter name="json" class="solr.JSONResponseWriter">
+        <str name="content-type">text/plain; charset=UTF-8</str>
+    </queryResponseWriter>
+
+    <admin>
+        <defaultQuery>*:*</defaultQuery>
+    </admin>
+</config>

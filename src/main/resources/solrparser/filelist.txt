@@ -1,0 +1,8 @@
+# List of files that need to be extracted from resources and saved in the (temp)
+# Solr container directory, inside of a conf sub-dir.
+
+schema.xml
+solrconfig.xml
+contractions_fr.txt
+contractions_it.txt
+protwords_en.txt
