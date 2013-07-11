@@ -16,6 +16,8 @@ public class SolrAnalyzerTest extends Assert {
         validateTerms(analyzer.getTermList("hello"), "hello");
         validateTerms(analyzer.getTermList("Hello world!"), "hello", "world");
         validateTerms(analyzer.getTermList("stemming tests"), "stem", "test");
+        validateTerms(analyzer.getTermList("Bob's questions rock!"), "bob", "question", "rock");
+        validateTerms(analyzer.getTermList("feature category"), "featur", "categori");
     }
     
     @Test

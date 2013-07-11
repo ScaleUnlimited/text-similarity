@@ -14,7 +14,6 @@ public class TextSimilarityWorkflowTest extends Assert {
         options.setTestMode(true);
         options.setInput("src/test/resources/mahout-emails.tsv");
         options.setWorkingDir("build/test/TextSimilarityWorkflowTest/test/working/");
-        options.setShingleSize(2);
         
         Flow<?> f = TextSimilarityWorkflow.createFlow(options);
         f.complete();

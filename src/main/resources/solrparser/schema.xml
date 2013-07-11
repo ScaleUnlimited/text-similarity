@@ -4,9 +4,9 @@
 <schema name="solrparser" version="1.5">
 
   <types>
-    <fieldType name="string" class="solr.StrField" sortMissingLast="true" omitNorms="true" omitTermFreqAndPositions="true" />
+    <fieldType name="string" class="solr.StrField" />
     
-    <fieldType name="text_de" class="solr.TextField" positionIncrementGap="100" omitNorms="true">
+    <fieldType name="text_de" class="solr.TextField">
       <analyzer> 
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.ICUFoldingFilterFactory"/>
@@ -27,7 +27,7 @@
     <!-- A text field with defaults appropriate for English:
          tokenizes with StandardTokenizer, down cases, protects words from protwords.txt, and
          finally applies Porter's stemming. -->
-    <fieldType name="text_en" class="solr.TextField" positionIncrementGap="100" omitNorms="true">
+    <fieldType name="text_en" class="solr.TextField">
       <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.ICUFoldingFilterFactory"/>
@@ -37,7 +37,7 @@
       </analyzer>
     </fieldType>
 
-    <fieldType name="text_es" class="solr.TextField" positionIncrementGap="100" omitNorms="true">
+    <fieldType name="text_es" class="solr.TextField">
       <analyzer> 
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.ICUFoldingFilterFactory"/>
@@ -45,7 +45,7 @@
       </analyzer>
     </fieldType>
 
-    <fieldType name="text_fr" class="solr.TextField" positionIncrementGap="100" omitNorms="true">
+    <fieldType name="text_fr" class="solr.TextField">
       <analyzer> 
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.ElisionFilterFactory" ignoreCase="true" articles="contractions_fr.txt"/>
@@ -54,7 +54,7 @@
       </analyzer>
     </fieldType>
 
-    <fieldType name="text_it" class="solr.TextField" positionIncrementGap="100" omitNorms="true">
+    <fieldType name="text_it" class="solr.TextField">
       <analyzer> 
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.ElisionFilterFactory" ignoreCase="true" articles="contractions_it.txt"/>
@@ -63,7 +63,7 @@
       </analyzer>
     </fieldType>
 
-    <fieldType name="text_ja" class="solr.TextField" positionIncrementGap="100" omitNorms="true">
+    <fieldType name="text_ja" class="solr.TextField">
       <analyzer>
         <tokenizer class="solr.JapaneseTokenizerFactory" mode="search"/>
         <filter class="solr.JapaneseBaseFormFilterFactory"/>
@@ -87,7 +87,7 @@
       </analyzer>
     </fieldType>
 
-    <fieldType name="text_pt" class="solr.TextField" positionIncrementGap="100" omitNorms="true">
+    <fieldType name="text_pt" class="solr.TextField">
       <analyzer> 
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.ICUFoldingFilterFactory"/>
@@ -103,7 +103,7 @@
       </analyzer>
     </fieldType>
 
-    <fieldType name="text_sv" class="solr.TextField" positionIncrementGap="100" omitNorms="true">
+    <fieldType name="text_sv" class="solr.TextField">
       <analyzer> 
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.ICUFoldingFilterFactory"/>
@@ -111,7 +111,7 @@
       </analyzer>
     </fieldType>
 
-    <fieldType name="text_zh-cn" class="solr.TextField" positionIncrementGap="100" omitNorms="true">
+    <fieldType name="text_zh-cn" class="solr.TextField">
       <analyzer>
         <tokenizer class="solr.StandardTokenizerFactory"/>
         
