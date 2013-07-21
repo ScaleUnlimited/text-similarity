@@ -1,19 +1,22 @@
 /*
- * Copyright (c) 2009-2013 Scale Unlimited
+ * Copyright (c) 2013 Scale Unlimited
  * 
  * All rights reserved.
  */
 
-package com.scaleunlimited.textsimilarity;
+package com.scaleunlimited.textfeatures;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -29,29 +32,47 @@ import org.apache.solr.schema.FieldType;
 import org.apache.solr.schema.IndexSchema;
 import org.xml.sax.SAXException;
 
-public class SolrAnalyzer {
+@SuppressWarnings("serial")
+public class SolrAnalyzer implements Serializable {
 
     private static final int DEFAULT_SHINGLE_SIZE = 1;
 
     private static final int MIN_WORD_LENGTH = 3;
     
     private int _shingleSize;
-    private Analyzer _analyzer;
-    private ReusableStringReader _stringReader;
-    private ThreadLocal<TokenStream> _tokenStream = new ThreadLocal<TokenStream>();
-    private ThreadLocal<CharTermAttribute> _token = new ThreadLocal<CharTermAttribute>();
+    private Set<String> _stopwords;
+    
+    private transient Analyzer _analyzer;
+    private transient ReusableStringReader _stringReader;
+    private transient ThreadLocal<TokenStream> _tokenStream;
+    private transient ThreadLocal<CharTermAttribute> _token;
 
     public SolrAnalyzer() throws IOException, ParserConfigurationException, SAXException {
-        this(DEFAULT_SHINGLE_SIZE);
+        this(DEFAULT_SHINGLE_SIZE, new HashSet<String>());
     }
 
-    public SolrAnalyzer(int shingleSize) throws IOException, ParserConfigurationException, SAXException {
+    public SolrAnalyzer(int shingleSize, Set<String> stopwords) throws IOException, ParserConfigurationException, SAXException {
         _shingleSize = shingleSize;
-        _analyzer = getAnalyzer("text_en");
-        _stringReader = new ReusableStringReader("");
+        _stopwords = stopwords;
+    }
+    
+    private synchronized void init() {
+        if (_analyzer == null) {
+            _stringReader = new ReusableStringReader("");
+            _tokenStream = new ThreadLocal<TokenStream>();
+            _token = new ThreadLocal<CharTermAttribute>();
+
+            try {
+                _analyzer = getAnalyzer("text_en");
+            } catch (Exception e) {
+                throw new RuntimeException("Can't creating Solr-based analyzer", e);
+            }
+        }
     }
     
     public List<String> getTermList(String contentText) {
+        init();
+        
         List<String> result = new ArrayList<String>(contentText.length() / 10);
         
         try {
@@ -113,6 +134,11 @@ public class SolrAnalyzer {
         }
         
         if (isNumber) {
+            return null;
+        }
+        
+        // Check if it's in our stopwords list.
+        if (_stopwords.contains(curWord)) {
             return null;
         }
         

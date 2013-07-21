@@ -19,4 +19,29 @@ public class TextSimilarityWorkflowTest extends Assert {
         f.complete();
     }
     
+    @Test
+    public void testBigrams() throws Exception {
+        TextSimilarityOptions options = new TextSimilarityOptions();
+        options.setTestMode(true);
+        options.setShingleSize(2);
+        options.setInput("src/test/resources/mahout-emails-big.tsv");
+        options.setWorkingDir("build/test/TextSimilarityWorkflowTest/testBigrams/working/");
+        
+        Flow<?> f = TextSimilarityWorkflow.createFlow(options);
+        f.complete();
+    }
+    
+    @Test
+    public void testStopwords() throws Exception {
+        TextSimilarityOptions options = new TextSimilarityOptions();
+        options.setTestMode(true);
+        options.setShingleSize(2);
+        options.setStopwords("src/main/resources/stopwords.txt");
+        options.setInput("src/test/resources/mahout-emails-big.tsv");
+        options.setWorkingDir("build/test/TextSimilarityWorkflowTest/testStopwords/working/");
+        
+        Flow<?> f = TextSimilarityWorkflow.createFlow(options);
+        f.complete();
+    }
+    
 }

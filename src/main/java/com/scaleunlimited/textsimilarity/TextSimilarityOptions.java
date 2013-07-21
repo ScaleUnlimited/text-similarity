@@ -14,17 +14,27 @@ public class TextSimilarityOptions extends BaseOptions {
 
     private String _input;
     private String _workingDir;
+    private String _stopwords;
     private boolean _testMode = false;
     private int _maxTermsPerUser = 20;
     private int _shingleSize = 1;
     
-    @Option(name = "-input", usage = "input data file (emails in tsv format)", required = true)
+    @Option(name = "-input", usage = "input data file or directory (emails in tsv format)", required = true)
     public void setInput(String input) {
         _input = input;
     }
   
     public String getInput() {
         return _input;
+    }
+
+    @Option(name = "-stopwords", usage = "input data file containing a list of stopwords", required = false)
+    public void setStopwords(String stopwords) {
+        _stopwords = stopwords;
+    }
+  
+    public String getStopwords() {
+        return _stopwords;
     }
 
     @Option(name = "-workingdir", usage = "working directory", required = true)

@@ -1,16 +1,21 @@
 /*
- * Copyright (c) 2009-2013 Scale Unlimited
+ * Copyright (c) 2013 Scale Unlimited
  * 
  * All rights reserved.
  */
 
 package com.scaleunlimited.textsimilarity;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.regex.Pattern;
+import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.io.IOUtils;
 
 import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
@@ -37,17 +42,10 @@ import com.scaleunlimited.cascading.local.LocalPlatform;
 import com.scaleunlimited.cascading.ml.ITermsFilter;
 import com.scaleunlimited.cascading.ml.ITermsParser;
 import com.scaleunlimited.cascading.ml.TopTermsByLLR;
+import com.scaleunlimited.textfeatures.Config;
+import com.scaleunlimited.textfeatures.SolrAnalyzer;
 
 public class TextSimilarityWorkflow {
-
-    private static final String EMAIL_FN = "email";
-    private static final String CONTENT_FN = "content";
-    
-    public static final String EMAIL_IDS_DIR = "email-ids";
-    public static final String TASTE_DATA_DIR = "taste-data";
-    public static final String TERMS_DIR = "terms";
-    public static final String EMAILS_DIR = "emails";
-    public static final String SIMILARITIES_DIR = "similarities";
 
     /**
      * Convert the "flattened" representation of emails (tab-separated values) into a Tuple
@@ -58,7 +56,7 @@ public class TextSimilarityWorkflow {
     public static class ParseEmails extends BaseOperation<NullContext> implements Function<NullContext> {
 
         public ParseEmails() {
-            super(new Fields(EMAIL_FN, CONTENT_FN));
+            super(new Fields(Config.EMAIL_FN, Config.CONTENT_FN));
         }
         
         @Override
@@ -125,14 +123,16 @@ public class TextSimilarityWorkflow {
         }
     }
     
-    private static class TermsParser implements ITermsParser {
+    @SuppressWarnings("serial")
+    private static class TermsParser implements ITermsParser, Serializable {
 
         private String _text;
         private SolrAnalyzer _analyzer;
         
-        public TermsParser(int shingleSize) {
+        public TermsParser(int shingleSize, String stopwordsFile) {
             try {
-                _analyzer = new SolrAnalyzer(shingleSize);
+                Set<String> stopwords = getStopwords(stopwordsFile);
+                _analyzer = new SolrAnalyzer(shingleSize, stopwords);
             } catch (Exception e) {
                 throw new RuntimeException("Unable to create SolrAnalyzer for parsing text", e);
             }
@@ -149,6 +149,17 @@ public class TextSimilarityWorkflow {
             _text = text;
         }
 
+        private Set<String> getStopwords(String stopwordsFile) throws FileNotFoundException, IOException {
+            Set<String> result = new HashSet<String>();
+            if (stopwordsFile != null) {
+                for (String stopword : IOUtils.readLines(new FileInputStream(stopwordsFile))) {
+                    result.add(stopword);
+                }
+            }
+            
+            return result;
+        }
+        
         @Override
         public int getNumWords(String term) {
             int numWords = 1;
@@ -161,7 +172,8 @@ public class TextSimilarityWorkflow {
         }
     }
     
-    private static class TermsFilter implements ITermsFilter {
+    @SuppressWarnings("serial")
+    private static class TermsFilter implements ITermsFilter, Serializable {
 
         private int _maxResults;
         
@@ -191,13 +203,13 @@ public class TextSimilarityWorkflow {
     public static class ParseLLRData extends BaseOperation<NullContext> implements Function<NullContext> {
         
         ParseLLRData() {
-            super( new Fields(EMAIL_FN, "term", "score") );
+            super( new Fields(Config.EMAIL_FN, "term", "score") );
         }
         
         @Override
         public void operate(FlowProcess flowProcess, FunctionCall<NullContext> funcCall) {
             TupleEntry te = funcCall.getArguments();
-            String email = te.getString(EMAIL_FN);
+            String email = te.getString(Config.EMAIL_FN);
             
             // Terms and scores are parallel arrays of values (strings and doubles)
             Tuple terms = (Tuple)funcCall.getArguments().getObject("terms");
@@ -232,25 +244,25 @@ public class TextSimilarityWorkflow {
         // inputPipe = new Each(inputPipe, new Fields(CONTENT_FN), new StripQuotedText(), Fields.REPLACE);
         
         // Remove quote header
-        inputPipe = new Each(inputPipe, new Fields(CONTENT_FN), new StripQuoteHeader(), Fields.REPLACE);
+        inputPipe = new Each(inputPipe, new Fields(Config.CONTENT_FN), new StripQuoteHeader(), Fields.REPLACE);
 
         // Now use the TopTermsByLLR SubAssembly to extract N top terms
         final int mapSideCacheSize = 10000;
         Pipe termsPipe = new TopTermsByLLR(inputPipe,
-                                           new TermsParser(options.getShingleSize()),
+                                           new TermsParser(options.getShingleSize(), options.getStopwords()),
                                            new TermsFilter(options.getMaxTermsPerUser()), 
-                                           new Fields(EMAIL_FN),
-                                           new Fields(CONTENT_FN),
+                                           new Fields(Config.EMAIL_FN),
+                                           new Fields(Config.CONTENT_FN),
                                            mapSideCacheSize);
         
         // We need to emit one line per email/term combination (with scores).
         termsPipe = new Each(termsPipe, new ParseLLRData());
         
         // Sort by user, then score
-        Fields groupFields = new Fields(EMAIL_FN, "score");
+        Fields groupFields = new Fields(Config.EMAIL_FN, "score");
         termsPipe = new GroupBy(termsPipe, groupFields, true);
         
-        BasePath termsPath = platform.makePath(workingDirPath, TERMS_DIR);
+        BasePath termsPath = platform.makePath(workingDirPath, Config.TERMS_DIR);
         Tap termsSink = platform.makeTap(platform.makeTextScheme(), termsPath, SinkMode.REPLACE);
 
         FlowDef flowDef = new FlowDef();

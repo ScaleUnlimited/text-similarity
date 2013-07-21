@@ -1,4 +1,4 @@
-package com.scaleunlimited.textsimilarity;
+package com.scaleunlimited.textfeatures;
 
 import java.io.IOException;
 import java.io.Reader;

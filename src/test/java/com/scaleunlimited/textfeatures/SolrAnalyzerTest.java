@@ -1,11 +1,15 @@
-package com.scaleunlimited.textsimilarity;
+package com.scaleunlimited.textfeatures;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import junit.framework.Assert;
 
 import org.junit.Test;
+
+import com.scaleunlimited.textfeatures.SolrAnalyzer;
 
 public class SolrAnalyzerTest extends Assert {
 
@@ -22,9 +26,18 @@ public class SolrAnalyzerTest extends Assert {
     
     @Test
     public void testMultiWord() throws Exception {
-        SolrAnalyzer analyzer = new SolrAnalyzer(3);
+        SolrAnalyzer analyzer = new SolrAnalyzer(3, new HashSet<String>());
         
         validateTerms(analyzer.getTermList("Hello there world!"), "hello", "there", "world", "hello there", "there world", "hello there world");
+    }
+    
+    @Test
+    public void testStopwords() throws Exception {
+        Set<String> stopwords = new HashSet<String>();
+        stopwords.add("there");
+        SolrAnalyzer analyzer = new SolrAnalyzer(3, stopwords);
+        
+        validateTerms(analyzer.getTermList("Hello there world!"), "hello", "world");
     }
     
     private void validateTerms(List<String> actualTerms, String...expectedTerms) {
@@ -55,7 +68,7 @@ public class SolrAnalyzerTest extends Assert {
 
     @Test
     public void testFilteringShortWords() throws Exception {
-        SolrAnalyzer analyzer = new SolrAnalyzer(3);
+        SolrAnalyzer analyzer = new SolrAnalyzer(3, new HashSet<String>());
         
         // "my" will be filtered out, so we only get the two single terms.
         validateTerms(analyzer.getTermList("Hello my world!"), "hello", "world");
@@ -67,7 +80,7 @@ public class SolrAnalyzerTest extends Assert {
     
     @Test
     public void testFilteringNumbers() throws Exception {
-        SolrAnalyzer analyzer = new SolrAnalyzer(1);
+        SolrAnalyzer analyzer = new SolrAnalyzer();
         
         // "my" will be filtered out, so we only get the two single terms.
         validateTerms(analyzer.getTermList("test 20 1.456 1,324"), "test");

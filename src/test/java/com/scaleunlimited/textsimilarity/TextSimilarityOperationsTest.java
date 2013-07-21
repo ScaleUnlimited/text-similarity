@@ -11,6 +11,7 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleListCollector;
 
+@SuppressWarnings("serial")
 public class TextSimilarityOperationsTest extends CascadingTestCase {
 
     @Test
