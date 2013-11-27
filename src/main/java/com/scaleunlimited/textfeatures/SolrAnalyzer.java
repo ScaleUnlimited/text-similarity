@@ -32,6 +32,11 @@ import org.apache.solr.schema.FieldType;
 import org.apache.solr.schema.IndexSchema;
 import org.xml.sax.SAXException;
 
+/**
+ * A text analyzer that parses a string and turns it into a list
+ * of strings, using 
+ *
+ */
 @SuppressWarnings("serial")
 public class SolrAnalyzer implements Serializable {
 
@@ -63,9 +68,11 @@ public class SolrAnalyzer implements Serializable {
             _token = new ThreadLocal<CharTermAttribute>();
 
             try {
+                // We hard-code the analyzer to be the one for the field type "text_en", which must
+                // be defined in the schema.xml file in src/main/resources/solrparser/
                 _analyzer = getAnalyzer("text_en");
             } catch (Exception e) {
-                throw new RuntimeException("Can't creating Solr-based analyzer", e);
+                throw new RuntimeException("Can't create Solr-based analyzer", e);
             }
         }
     }
@@ -146,11 +153,9 @@ public class SolrAnalyzer implements Serializable {
     }
 
     /**
-     * Leverage the Solr schema.xml analysis chain to get the right analyzer for the target language.
+     * Leverage the Solr schema.xml analysis chain to get the right analyzer for the target field type.
      * 
-     * @param solrCoreDirName
-     * @param language target language
-     * @param modifier field name modifier (e.g. "_raw" for no stemming or special splitting).
+     * @param fieldTypeName target field type
      * @return
      * @throws IOException
      * @throws ParserConfigurationException
@@ -158,7 +163,8 @@ public class SolrAnalyzer implements Serializable {
      */
     private Analyzer getAnalyzer(String fieldTypeName) throws IOException, ParserConfigurationException, SAXException {
         // Create a temp location for Solr home, which has a skeleton solr.xml that
-        // references the Solr core directory.
+        // references the Solr core directory. Note that as of Solr 4.5, this is no
+        // longer necessary (we don't need a solr.xml)
         File tmpSolrHome = new File(FileUtils.getTempDirectory(), UUID.randomUUID().toString());
         File solrCoreDir = makeSolrCoreDir(tmpSolrHome);
         String coreName = solrCoreDir.getName();
@@ -201,6 +207,17 @@ public class SolrAnalyzer implements Serializable {
         }
     }
 
+    /**
+     * We rely on a file (as a resource) that contains a list of Solr-related files
+     * we need to extract from our jar and write out to a temp location. There's no
+     * good way to iterate over resources in a jar, unfortunately, so we use this
+     * somewhat brittle work-around. Which means that if you add or remove or rename
+     * files in the Solr configuration, you have to remember to edit filelist.txt
+     * 
+     * @param solrHomeDir temporary directory where we should build our Solr home dir.
+     * @return location of the collection directory.
+     * @throws IOException
+     */
     private File makeSolrCoreDir(File solrHomeDir) throws IOException {
         List<String> filenames = IOUtils.readLines(SolrAnalyzer.class.getResourceAsStream("/solrparser/filelist.txt"));
         

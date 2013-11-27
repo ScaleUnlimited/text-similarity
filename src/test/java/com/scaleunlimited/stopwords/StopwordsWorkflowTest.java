@@ -12,7 +12,7 @@ import com.scaleunlimited.textsimilarity.TextSimilarityWorkflow;
 public class StopwordsWorkflowTest {
 
     @Test
-    public void test() throws Exception {
+    public void testTopDFTerms() throws Exception {
         StopwordsOptions options = new StopwordsOptions();
         options.setTestMode(true);
         options.setInput("src/test/resources/mahout-emails-big.tsv");

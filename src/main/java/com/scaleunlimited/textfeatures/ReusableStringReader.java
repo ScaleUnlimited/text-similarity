@@ -3,6 +3,12 @@ package com.scaleunlimited.textfeatures;
 import java.io.IOException;
 import java.io.Reader;
 
+/**
+ * A StringReader that has a reset() method, so that we can re-use it
+ * in the SolrAnalyzer, versus having to create a new one every time
+ * we get called with a new String to parse.
+ *
+ */
 public class ReusableStringReader extends Reader {
 
     private char[] _chars;
