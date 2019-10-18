@@ -26,7 +26,7 @@ All rights reserved.
 	<properties>
 		<hadoop.version>1.0.4</hadoop.version>
 		<cascading.version>2.2.0-wip-66</cascading.version>
-        <solr.version>4.2.1</solr.version>
+        <solr.version>8.2.0</solr.version>
 	</properties>
 
 	<dependencies>
